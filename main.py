@@ -1,6 +1,7 @@
-from src.state import AgentState
 from src.graph import build_graph
+from src.state import AgentState
 from src.utils import save_report
+
 
 def main():
     topic = input("请输入研究主题: ")

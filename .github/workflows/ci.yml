@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Run tests
+        env:
+          ZHIPU_API_KEY: test-key
+          ZHIPU_BASE_URL: https://test.api.example.com
+          ZHIPU_CHAT_MODEL: test-model
+          BOCHA_API_KEY: test-bocha-key
+        run: python -m pytest tests/ -v

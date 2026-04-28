@@ -1,3 +1,12 @@
 __pycache__/
 *.pyc
+*.pyo
 .env
+.claude/
+reports/
+*.sqlite3
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

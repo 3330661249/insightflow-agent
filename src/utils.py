@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def save_report(topic: str, report: str):
     reports_dir = Path(__file__).resolve().parent.parent / "reports"
     reports_dir.mkdir(exist_ok=True)
