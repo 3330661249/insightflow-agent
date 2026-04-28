@@ -1,6 +1,6 @@
 import requests
 
-from src.config import get_settings
+from src.config import SEARCH_RESULT_COUNT, SEARCH_TIMEOUT_SECONDS, get_settings
 from src.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -24,11 +24,11 @@ def search_topic(topic: str) -> str:
             "query": topic,
             "freshness": "oneYear",
             "summary": True,
-            "count": 3,
+            "count": SEARCH_RESULT_COUNT,
         }
 
         response = requests.post(
-            BOCHA_API_URL, headers=headers, json=payload, timeout=20
+            BOCHA_API_URL, headers=headers, json=payload, timeout=SEARCH_TIMEOUT_SECONDS
         )
         response.raise_for_status()
 

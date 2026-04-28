@@ -1,13 +1,18 @@
 import os
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+REPORTS_DIR = BASE_DIR / "reports"
 MAX_TOPIC_LENGTH = 500
-VECTORSTORE_ROOT = os.getenv("VECTORSTORE_ROOT", "")
+DEFAULT_CHAT_MODEL = "glm-4-flash"
+SEARCH_TIMEOUT_SECONDS = 20
+SEARCH_RESULT_COUNT = 3
 
 
 @dataclass(frozen=True)
@@ -22,7 +27,7 @@ class Settings:
 def get_settings() -> Settings:
     api_key = os.getenv("ZHIPU_API_KEY", "").strip()
     base_url = os.getenv("ZHIPU_BASE_URL", "").strip()
-    chat_model = os.getenv("ZHIPU_CHAT_MODEL", "glm-4-flash").strip()
+    chat_model = os.getenv("ZHIPU_CHAT_MODEL", DEFAULT_CHAT_MODEL).strip() or DEFAULT_CHAT_MODEL
     bocha_key = os.getenv("BOCHA_API_KEY", "").strip()
 
     if not api_key:

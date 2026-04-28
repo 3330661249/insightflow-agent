@@ -7,3 +7,5 @@ class AgentState(TypedDict):
     summary: str
     report: str
     need_tool: bool
+    decision_reason: str
+    errors: list[str]

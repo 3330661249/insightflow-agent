@@ -9,6 +9,7 @@ def route_after_decision(state: AgentState) -> str:
         return "collect_info"
     return "skip_tool"
 
+
 def build_graph():
     graph_builder = StateGraph(AgentState)
 
@@ -24,8 +25,8 @@ def build_graph():
         route_after_decision,
         {
             "collect_info": "collect_info",
-            "skip_tool": "skip_tool"
-        }
+            "skip_tool": "skip_tool",
+        },
     )
 
     graph_builder.add_edge("collect_info", "generate_report")

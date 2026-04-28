@@ -1,4 +1,7 @@
-from src.utils import save_report
+import pytest
+
+from src.config import MAX_TOPIC_LENGTH
+from src.utils import sanitize_topic_for_filename, save_report, validate_topic
 
 
 def test_save_report(tmp_path, monkeypatch):
@@ -23,3 +26,21 @@ def test_save_report_sanitizes_filename(tmp_path, monkeypatch):
     file_path = save_report("主题/带斜杠", "# 内容")
     assert "/" not in file_path.name
     assert file_path.exists()
+
+
+def test_validate_topic_success():
+    assert validate_topic("  AI Agent  ") == "AI Agent"
+
+
+def test_validate_topic_empty():
+    with pytest.raises(ValueError, match="不能为空"):
+        validate_topic("   ")
+
+
+def test_validate_topic_too_long():
+    with pytest.raises(ValueError, match="超过最大限制"):
+        validate_topic("x" * (MAX_TOPIC_LENGTH + 1))
+
+
+def test_sanitize_topic_for_filename():
+    assert sanitize_topic_for_filename("主题 / 研究:计划") == "主题_研究_计划"
