@@ -44,3 +44,18 @@ def test_validate_topic_too_long():
 
 def test_sanitize_topic_for_filename():
     assert sanitize_topic_for_filename("主题 / 研究:计划") == "主题_研究_计划"
+
+
+def test_repeat_runs_do_not_overwrite_reports(tmp_path, monkeypatch):
+    monkeypatch.setattr("src.utils.REPORTS_DIR", tmp_path)
+    first = save_report("同一主题", "first")
+    second = save_report("同一主题", "second")
+    assert first != second
+    assert first.read_text(encoding="utf-8") == "first"
+    assert second.read_text(encoding="utf-8") == "second"
+
+
+def test_long_valid_topic_can_be_saved(tmp_path, monkeypatch):
+    monkeypatch.setattr("src.utils.REPORTS_DIR", tmp_path)
+    path = save_report(validate_topic("x" * 500), "long subject")
+    assert path.read_text(encoding="utf-8") == "long subject"

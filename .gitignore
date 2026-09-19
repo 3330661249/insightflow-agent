@@ -4,6 +4,9 @@ __pycache__/
 .env
 .claude/
 reports/
+.venv/
+.pytest_cache/
+.ruff_cache/
 *.sqlite3
 .DS_Store
 .idea/
