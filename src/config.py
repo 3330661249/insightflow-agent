@@ -3,16 +3,21 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 REPORTS_DIR = BASE_DIR / "reports"
 MAX_TOPIC_LENGTH = 500
 DEFAULT_CHAT_MODEL = "glm-4-flash"
 SEARCH_TIMEOUT_SECONDS = 20
 SEARCH_RESULT_COUNT = 3
+LLM_TIMEOUT_SECONDS = 30
+
+
+def is_offline() -> bool:
+    return os.getenv("INSIGHTFLOW_OFFLINE", "").lower() in {"1", "true", "yes"}
+
+
+def get_search_api_key() -> str:
+    return os.getenv("BOCHA_API_KEY", "").strip()
 
 
 @dataclass(frozen=True)
@@ -45,6 +50,8 @@ def get_settings() -> Settings:
 
 @lru_cache(maxsize=1)
 def get_chat_llm():
+    if is_offline():
+        raise ValueError("MODEL_OFFLINE")
     from langchain_openai import ChatOpenAI
 
     settings = get_settings()
@@ -53,4 +60,6 @@ def get_chat_llm():
         api_key=settings.zhipu_api_key,
         base_url=settings.zhipu_base_url,
         temperature=0.3,
+        timeout=LLM_TIMEOUT_SECONDS,
+        max_retries=1,
     )

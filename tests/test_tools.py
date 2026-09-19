@@ -22,21 +22,24 @@ def test_parse_search_response_with_results():
         }
     }
     result = _parse_search_response(data, "LangGraph")
-    assert "LangGraph 入门" in result
-    assert "LangGraph 是用于构建 Agent 的框架" in result
-    assert "https://example.com/1" in result
-    assert "进阶用法介绍" in result
+    assert result["status"] == "ok"
+    assert result["sources"][0]["title"] == "LangGraph 入门"
+    assert result["sources"][0]["content"] == "LangGraph 是用于构建 Agent 的框架"
+    assert result["sources"][0]["url"] == "https://example.com/1"
+    assert result["sources"][1]["content"] == "进阶用法介绍"
 
 
 def test_parse_search_response_empty():
     data = {"data": {"webPages": {"value": []}}}
     result = _parse_search_response(data, "测试主题")
-    assert "未搜索到" in result
+    assert result["status"] == "empty"
+    assert result["sources"] == []
 
 
 def test_parse_search_response_no_data():
     result = _parse_search_response({}, "测试")
-    assert "未搜索到" in result
+    assert result["status"] == "error"
+    assert result["error_code"] == "SEARCH_INVALID_RESPONSE"
 
 
 def test_parse_search_response_missing_fields():
@@ -48,4 +51,5 @@ def test_parse_search_response_missing_fields():
         }
     }
     result = _parse_search_response(data, "测试")
-    assert "测试" in result
+    assert result["status"] == "error"
+    assert result["sources"] == []

@@ -10,13 +10,15 @@ def test_skip_tool():
     assert "机器学习基础" in result["summary"]
 
 
-def test_decide_search_with_news_keyword():
+def test_decide_search_with_news_keyword(monkeypatch):
+    monkeypatch.setattr("src.nodes.get_chat_llm", lambda: (_ for _ in ()).throw(ValueError("offline")))
     state = {"topic": "本周AI新闻", "need_tool": False, "tool_result": "", "summary": "", "report": "", "decision_reason": "", "errors": []}
     result = decide_search(state)
     assert result["need_tool"] is True
 
 
-def test_decide_search_with_static_topic():
+def test_decide_search_with_static_topic(monkeypatch):
+    monkeypatch.setattr("src.nodes.get_chat_llm", lambda: (_ for _ in ()).throw(ValueError("offline")))
     state = {"topic": "机器学习基础概念", "need_tool": False, "tool_result": "", "summary": "", "report": "", "decision_reason": "", "errors": []}
     result = decide_search(state)
     assert result["need_tool"] is False
@@ -35,12 +37,17 @@ def test_collect_info_with_mock(monkeypatch):
     monkeypatch.setattr(type(original_prompt), "__or__", lambda self, other: mock_chain)
 
     monkeypatch.setattr(
-        nodes_module, "search_topic", lambda topic: "搜索结果文本"
+        nodes_module, "search_topic", lambda topic: {
+            "status": "ok", "error_code": "", "sources": [{
+                "id": "S1", "title": "测试来源", "url": "https://example.com",
+                "content": "搜索结果文本", "published_at": "",
+            }],
+        }
     )
 
     state = {"topic": "测试主题", "need_tool": True, "tool_result": "", "summary": "", "report": "", "decision_reason": "", "errors": []}
     result = collect_info(state)
-    assert result["tool_result"] == "搜索结果文本"
+    assert "搜索结果文本" in result["tool_result"]
     assert result["summary"] == "这是摘要内容"
 
 
@@ -68,9 +75,14 @@ def test_collect_info_fallback_when_llm_fails(monkeypatch):
     mock_chain.invoke.side_effect = RuntimeError("llm down")
     original_prompt = nodes_module.COLLECT_INFO_PROMPT
     monkeypatch.setattr(type(original_prompt), "__or__", lambda self, other: mock_chain)
-    monkeypatch.setattr(nodes_module, "search_topic", lambda topic: "搜索结果文本")
+    monkeypatch.setattr(nodes_module, "search_topic", lambda topic: {
+        "status": "ok", "error_code": "", "sources": [{
+            "id": "S1", "title": "测试来源", "url": "https://example.com",
+            "content": "搜索结果文本", "published_at": "",
+        }],
+    })
 
     state = {"topic": "测试主题", "need_tool": True, "tool_result": "", "summary": "", "report": "", "decision_reason": "", "errors": []}
     result = collect_info(state)
-    assert "摘要整理失败" in result["summary"]
-    assert result["errors"]
+    assert "搜索结果文本" in result["summary"]
+    assert "SUMMARY_UNAVAILABLE" in result["errors"]

@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from uuid import uuid4
 
 from src.config import MAX_TOPIC_LENGTH, REPORTS_DIR
 from src.logging_utils import get_logger
@@ -25,12 +26,13 @@ def sanitize_topic_for_filename(topic: str) -> str:
 
 def save_report(topic: str, report: str):
     reports_dir = Path(REPORTS_DIR)
-    reports_dir.mkdir(exist_ok=True)
+    reports_dir.mkdir(parents=True, exist_ok=True)
 
-    safe_topic = sanitize_topic_for_filename(topic)
-    file_path = reports_dir / f"{safe_topic}.md"
+    # Limit UTF-8 bytes so valid 500-character topics also fit common filesystems.
+    safe_topic = sanitize_topic_for_filename(topic).encode("utf-8")[:180].decode("utf-8", errors="ignore")
+    file_path = reports_dir / f"{safe_topic}-{uuid4().hex[:12]}.md"
 
-    with open(file_path, "w", encoding="utf-8") as f:
+    with open(file_path, "x", encoding="utf-8") as f:
         f.write(report)
 
     logger.info("报告已保存: topic=%r, path=%s", topic, file_path)
